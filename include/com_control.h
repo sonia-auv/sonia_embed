@@ -32,7 +32,7 @@ namespace sonia_embed
          * @param data Tram of data to send. TRAM => [id, size, data]
          * @return ssize_t 0 if successfully sent else 1.
          */
-        virtual RETURN_CODE transmit(size_t id, uint8_t* data, size_t size) = 0;
+        virtual RETURN_CODE transmit(const size_t id, const uint8_t* data, const size_t size) = 0;
 
         // virtual ssize_t validate(uint8_t* data, int size) = 0;
 

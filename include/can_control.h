@@ -13,8 +13,8 @@ namespace sonia_embed
         CanControl<MSG_SIZE>(PinName hoci, PinName hico, bool is_host) : ComControl<MSG_SIZE>(hoci, hico, is_host){};
         ~CanControl();
 
-        RETURN_CODE receive(size_t id, uint8_t* data, size_t size) override;
-        RETURN_CODE transmit(size_t id, uint8_t* data, size_t size) override;
+        std::pair<size_t, size_t> receive(uint8_t* data) override;
+        RETURN_CODE transmit(const size_t id, const uint8_t* data, const size_t size) override;
 
         RETURN_CODE set_filter(uint8_t filter_id);
         
@@ -23,5 +23,8 @@ namespace sonia_embed
 
         private:
         CAN* m_can_handler;
+
+        size_t can_to_array(const CANMessage* can_msgs, uint8_t* serial);
+        size_t array_to_can(const uint8_t* serial, size_t size, CANMessage* can_msgs);
     };
 }

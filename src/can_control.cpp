@@ -1,5 +1,5 @@
 #include "can_control.h"
-
+#include "canbus_toolkit.h"
 
 namespace sonia_embed
 {
@@ -10,80 +10,73 @@ namespace sonia_embed
     }
 
     template<uint8_t MSG_SIZE>
-    RETURN_CODE CanControl<MSG_SIZE>::receive(uint8_t* data)
+    std::pair<size_t, size_t> CanControl<MSG_SIZE>::receive(uint8_t* data)
     {
         // assumtion: tram => [id, size, data]
-        int msg_counter = 0;
+        int msg_size = 0;
         
         CANMessage msg;
-        if (m_can_handler->read(msg) == 1)
+        if (0 == m_can_handler->read(msg))
         {
-            msg_counter++;
+            return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
         }
 
-        uint8_t size = msg.data[1];
+        // TODO Make constant and not magic number
+        uint8_t can_msgs[sonia_embed_toolkit::CanBusToolkit::MAX_CAN_SIZE];
 
-        memcpy(msg.data, data, (size > 8) ? 8 : size);
+        uint8_t total = msg.data[0] & 0b1111;
 
-        for (size_t i = 0; i < (size-8) / 8; i++)
+        memcpy(can_msgs, msg.data, msg.len);
+        msg_size += msg.len;
+        
+
+        for (size_t i = 0; i < total; i++)
         {
-            CANMessage msg;
-            if (m_can_handler->read(msg) == 1)
+            if (0 == m_can_handler->read(msg))
             {
-                msg_counter++;
+                return std::pair<size_t, size_t>(RETURN_BAD, 0);
             }
-            memcpy(msg.data, &data[8*i+8], 8);
+            memcpy(can_msgs, msg.data, msg.len);
+            msg_size += msg.len;
         }
 
-        if (size % 8 != 0)
-        {
-            CANMessage msg;
-            if (m_can_handler->read(msg) == 1)
-            {
-                msg_counter++;
-            }
-            memcpy(msg.data, &data[size - (size % 8)], size % 8);
-        }
-
-        if (msg_counter == (size % 8 == 0) ? (size / 8) : (size / 8) + 1)
-        {
-            return RETURN_OK;
-        }
-        return RETURN_BAD_MSG_COUNT;
+        size_t serial_size = sonia_embed_toolkit::CanBusToolkit::convert_from_can(msg_size, can_msgs, data);
+        return std::pair<size_t, size_t>(msg.id, serial_size);
     }
 
     template<uint8_t MSG_SIZE>
-    RETURN_CODE CanControl<MSG_SIZE>::transmit(uint8_t* data)
+    RETURN_CODE CanControl<MSG_SIZE>::transmit(const size_t id, const uint8_t* data, const size_t size)
     {
         // assumtion: tram => [id, size, data]
-        
-        int msg_counter = 0;
-        unsigned int id = data[0];
-        int size = data[1];
-        
-        for (size_t i = 0; i < size/8; i++)
+
+        uint8_t can_msg_array[sonia_embed_toolkit::CanBusToolkit::MAX_CAN_SIZE];
+        size_t can_size = sonia_embed_toolkit::CanBusToolkit::convert_to_can(size, data, can_msg_array);
+        size_t msg_byte_counter = 0;
+        for (size_t i = 0; i < can_size/8; i++)
         {
-            uint8_t* tmp_data[8];
-            memcpy(&data[i*8], tmp_data, 8);
+            uint8_t tmp_data[8];
+            memcpy(tmp_data, &can_msg_array[i*8], 8);
             CANMessage msg(id, *tmp_data);
-            if (m_can_handler->write(msg) == 1)
+            if (0 == m_can_handler->write(msg))
             {
-                msg_counter++;
+                return RETURN_BAD;
             }
+            msg_byte_counter += 8;
         }
 
-        if (size % 8 != 0)
+        if (can_size % 8 != 0)
         {
-            uint8_t* tmp_data[size % 8];
-            memcpy(&data[size-(size % 8)], tmp_data, size % 8);
-            CANMessage msg(id, *tmp_data);
-            if (m_can_handler->write(msg) == 1)
+            uint8_t tmp_data[8];
+            memcpy(tmp_data, &can_msg_array[msg_byte_counter], can_size % 8);
+            CANMessage msg(id, *tmp_data, can_size % 8);
+            if (0 == m_can_handler->write(msg))
             {
-                msg_counter++;
+                return RETURN_BAD;
             }
+            msg_byte_counter += can_size % 8;
         }
 
-        if (msg_counter == (size % 8 == 0) ? (size / 8) : (size / 8) + 1)
+        if (msg_byte_counter == can_size)
         {
             return RETURN_OK;
         }
@@ -110,6 +103,12 @@ namespace sonia_embed
             m_can_handler = new CAN(this.m_hico, this.m_hoci);
         }
         return RETURN_OK;
+    }
+
+    template<uint8_t MSG_SIZE>
+    size_t CanControl<MSG_SIZE>::array_to_can(const uint8_t* serial, size_t size, CANMessage* can_msgs)
+    {
+        return size_t();
     }
 
 } // namespace sonia_embed

@@ -16,7 +16,7 @@ namespace sonia_embed
         {
             return std::pair<size_t, size_t>(RETURN_PORT_UNREADABLE, 0);
         }
-        
+
         uint8_t header[3];
         m_serial_handler->read(header, 3);
 
@@ -30,7 +30,7 @@ namespace sonia_embed
             return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
         }
 
-        if (!check_filter(header[1]))
+        if (!this.check_filter(header[1]))
         {
             return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
         }
@@ -41,7 +41,7 @@ namespace sonia_embed
     }
 
     template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE RS485Control<MSG_SIZE, MAX_IDS>::transmit(size_t id, uint8_t* data, size_t size)
+    RETURN_CODE RS485Control<MSG_SIZE, MAX_IDS>::transmit(const size_t id, uint8_t* data, const size_t size)
     {   
         if (!m_serial_handler->writable())
         {
