@@ -24,7 +24,7 @@ namespace sonia_embed
          * @param data Data buffer to read into. Must be size MSG_SIZE;
          * @return RETURN_CODE RETURN_OK for no error.
          */
-        virtual RETURN_CODE receive(uint8_t* data) = 0;
+        virtual std::pair<size_t, size_t> receive(uint8_t* data) = 0;
         
         /**
          * @brief Send data to a recipient
@@ -32,7 +32,7 @@ namespace sonia_embed
          * @param data Tram of data to send. TRAM => [id, size, data]
          * @return ssize_t 0 if successfully sent else 1.
          */
-        virtual RETURN_CODE transmit(uint8_t* data) = 0;
+        virtual RETURN_CODE transmit(size_t id, uint8_t* data, size_t size) = 0;
 
         // virtual ssize_t validate(uint8_t* data, int size) = 0;
 
@@ -42,6 +42,8 @@ namespace sonia_embed
         PinName m_hoci;
         PinName m_hico;
         bool m_is_host;
+    
+    private:
 
     };
 }

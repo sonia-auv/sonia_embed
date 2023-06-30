@@ -12,5 +12,6 @@ namespace sonia_embed
         RETURN_PORT_UNREADABLE,
         RETURN_PORT_UNWRITABLE,
         RETURN_NOT_FOR_ME,
+        RETURN_NO_START_BYTE,
     };
 } // namespace sonia_embed

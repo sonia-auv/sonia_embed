@@ -1,6 +1,6 @@
 
 #include "RS485_control.h"
-
+#include "rs485_toolkit.h"
 namespace sonia_embed
 {
     template<uint8_t MSG_SIZE, size_t MAX_IDS>
@@ -10,48 +10,48 @@ namespace sonia_embed
     }
 
     template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE RS485Control<MSG_SIZE, MAX_IDS>::receive(uint8_t* data)
+    std::pair<size_t, size_t> RS485Control<MSG_SIZE, MAX_IDS>::receive(uint8_t* data)
     {
         if (!m_serial_handler->readable())
         {
-            return RETURN_PORT_UNREADABLE;
+            return std::pair<size_t, size_t>(RETURN_PORT_UNREADABLE, 0);
         }
+        
+        uint8_t header[3];
+        m_serial_handler->read(header, 3);
 
-        uint8_t read_data[1];
-        m_serial_handler->read(read_data, 1);
-        for (size_t i = 0; i <= this.m_table_index; i++)
+        uint8_t serial_msg[header[2] + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
+        memcpy(serial_msg, header, 3);
+
+        m_serial_handler->read(&serial_msg[3], header[2]);
+        
+        if (header[0] != sonia_embed_toolkit::RS485Toolkit::START_BYTE)
         {
-            if (this.m_id_table[i] == read_data[0])
-            {
-                break;
-            }
-            else if (i == this.m_table_index)
-            {
-                return RETURN_NOT_FOR_ME;
-            }
+            return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
         }
 
+        if (!check_filter(header[1]))
+        {
+            return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
+        }
 
-        data[0] = read_data[0];
-        m_serial_handler->read(read_data, 1);
-        uint8_t size = read_data[0];
-        data[1] = size;
-        uint8_t tmp_data[size-2];
-        m_serial_handler->read(tmp_data, size-2);
-        memcpy(tmp_data, &data[2], size-2);
-        return RETURN_OK;
+        size_t serial_size = sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(data, serial_msg);
+
+        return std::pair<size_t, size_t>(header[1], serial_size);
     }
 
     template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE RS485Control<MSG_SIZE, MAX_IDS>::transmit(uint8_t* data)
+    RETURN_CODE RS485Control<MSG_SIZE, MAX_IDS>::transmit(size_t id, uint8_t* data, size_t size)
     {   
         if (!m_serial_handler->writable())
         {
             return RETURN_PORT_UNWRITABLE;
         }
 
-        size_t size = data[1];
-        if (m_serial_handler->write(data, size) == size)
+        uint8_t serial_msg[size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
+        size_t serial_size = sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
+
+        if (m_serial_handler->write(serial_msg, serial_size) == serial_size)
         {
             return RETURN_OK;
         }

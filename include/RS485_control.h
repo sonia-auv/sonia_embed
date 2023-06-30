@@ -13,8 +13,8 @@ namespace sonia_embed
         RS485Control<MSG_SIZE, MAX_IDS>(uint8_t handle, PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false) : SerialControl<MSG_SIZE, MAX_IDS>(handle, hoci, hico, baud, is_blocking, is_host){};
         ~RS485Control();
 
-        RETURN_CODE receive(uint8_t* data) override;
-        RETURN_CODE transmit(uint8_t* data) override;
+        std::pair<size_t, size_t> receive(uint8_t* data) override;
+        RETURN_CODE transmit(size_t id, uint8_t* data, size_t size) override;
         
         protected:
         RETURN_CODE setup_com() override;

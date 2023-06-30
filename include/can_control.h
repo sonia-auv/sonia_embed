@@ -13,8 +13,8 @@ namespace sonia_embed
         CanControl<MSG_SIZE>(PinName hoci, PinName hico, bool is_host) : ComControl<MSG_SIZE>(hoci, hico, is_host){};
         ~CanControl();
 
-        RETURN_CODE receive(uint8_t* data) override;
-        RETURN_CODE transmit(uint8_t* data) override;
+        RETURN_CODE receive(size_t id, uint8_t* data, size_t size) override;
+        RETURN_CODE transmit(size_t id, uint8_t* data, size_t size) override;
 
         RETURN_CODE set_filter(uint8_t filter_id);
         
