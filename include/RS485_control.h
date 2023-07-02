@@ -6,11 +6,10 @@
 
 namespace sonia_embed
 {
-    template<size_t MAX_IDS>
-    class RS485Control : public SerialControl<MAX_IDS>
+    class RS485Control : public SerialControl
     {
         public:
-        RS485Control<MAX_IDS>(PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false);
+        RS485Control(PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false);
         ~RS485Control();
 
         std::pair<size_t, size_t> receive(uint8_t* data) override;

@@ -3,9 +3,8 @@
 #include "rs485_toolkit.h"
 namespace sonia_embed
 {
-    template<size_t MAX_IDS>
-    RS485Control<MAX_IDS>::RS485Control(PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false) 
-        : SerialControl<MAX_IDS>(hoci, hico, baud, is_blocking, is_host)
+    RS485Control::RS485Control(PinName hoci, PinName hico, int baud, bool is_blocking, bool is_host) 
+        : SerialControl(hoci, hico, baud, is_blocking, is_host)
     {
         if (is_host)
         {
@@ -19,14 +18,12 @@ namespace sonia_embed
         m_serial_handler->set_blocking(is_blocking);
     };
 
-    template<size_t MAX_IDS>
-    RS485Control<MAX_IDS>::~RS485Control()
+    RS485Control::~RS485Control()
     {
         delete m_serial_handler;
     }
 
-    template<size_t MAX_IDS>
-    std::pair<size_t, size_t> RS485Control<MAX_IDS>::receive(uint8_t* data)
+    std::pair<size_t, size_t> RS485Control::receive(uint8_t* data)
     {
         if (!m_serial_handler->readable())
         {
@@ -46,24 +43,21 @@ namespace sonia_embed
             return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
         }
 
-        if (!this.check_filter(header[1]))
+        if (!check_filter(header[1]))
         {
             return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
         }
 
-        size_t serial_size = sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(data, serial_msg);
-
-        return std::pair<size_t, size_t>(header[1], serial_size);
+        return sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(data, serial_msg);
     }
 
-    template<size_t MAX_IDS>
-    RETURN_CODE RS485Control<MAX_IDS>::transmit(const size_t id, const uint8_t* data, const size_t size)
+    RETURN_CODE RS485Control::transmit(const size_t id, const uint8_t* data, const size_t size)
     {   
         if (!m_serial_handler->writable())
         {
             return RETURN_PORT_UNWRITABLE;
         }
-
+        //TODO Fix the dynamic sizing.
         uint8_t serial_msg[size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
         size_t serial_size = sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
 
