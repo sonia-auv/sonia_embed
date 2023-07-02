@@ -15,9 +15,6 @@ namespace sonia_embed
 
         std::pair<size_t, size_t> receive(uint8_t* data) override;
         RETURN_CODE transmit(const size_t id, const uint8_t* data, const size_t size) override;
-        
-        protected:
-        RETURN_CODE setup_com() override;
 
         private:
         UnbufferedSerial* m_serial_handler;

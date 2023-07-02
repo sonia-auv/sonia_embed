@@ -10,7 +10,7 @@ namespace sonia_embed
     {
     public:
         SerialControl<MAX_IDS>(uint8_t handle, PinName hoci, PinName hico, int baud, int is_blocking = true, int is_host = false)
-            : m_baud(baud), m_is_blocking(is_blocking), ComControl(handle, hoci, hico, is_host) {};
+            : m_baud(baud), m_is_blocking(is_blocking), ComControl(hoci, hico, is_host) {};
 
         RETURN_CODE add_filter(size_t id);
 

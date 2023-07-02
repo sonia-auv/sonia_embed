@@ -4,6 +4,22 @@
 namespace sonia_embed
 {
     template<size_t MAX_IDS>
+    RS485Control<MAX_IDS>::RS485Control(uint8_t handle, PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false) 
+        : SerialControl<MAX_IDS>(handle, hoci, hico, baud, is_blocking, is_host)
+    {
+        if (m_is_host)
+        {
+            m_serial_handler = new UnbufferedSerial(m_hoci, m_hico, m_baud);
+        }
+        else
+        {
+            m_serial_handler = new UnbufferedSerial(m_hico, m_hoci, m_baud);
+        }
+
+        m_serial_handler->set_blocking(m_is_blocking);
+    };
+
+    template<size_t MAX_IDS>
     RS485Control<MAX_IDS>::~RS485Control()
     {
         delete m_serial_handler;
@@ -57,23 +73,5 @@ namespace sonia_embed
         }
         return RETURN_BAD_MSG_COUNT;
     }
-
-    template<size_t MAX_IDS>
-    RETURN_CODE RS485Control<MAX_IDS>::setup_com()
-    {
-        if (this.m_is_host)
-        {
-            m_serial_handler = new UnbufferedSerial(this.m_hoci, this.m_hico, this.m_baud);
-        }
-        else
-        {
-            m_serial_handler = new UnbufferedSerial(this.m_hico, this.m_hoci, this.m_baud);
-        }
-
-        m_serial_handler->set_blocking(this.m_is_blocking);
-
-        return RETURN_OK;
-    }
-
 
 }
