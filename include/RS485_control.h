@@ -6,15 +6,15 @@
 
 namespace sonia_embed
 {
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    class RS485Control : public SerialControl<MSG_SIZE, MAX_IDS>
+    template<size_t MAX_IDS>
+    class RS485Control : public SerialControl<MAX_IDS>
     {
         public:
-        RS485Control<MSG_SIZE, MAX_IDS>(uint8_t handle, PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false) : SerialControl<MSG_SIZE, MAX_IDS>(handle, hoci, hico, baud, is_blocking, is_host){};
+        RS485Control<MAX_IDS>(uint8_t handle, PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false) : SerialControl<MAX_IDS>(handle, hoci, hico, baud, is_blocking, is_host){};
         ~RS485Control();
 
         std::pair<size_t, size_t> receive(uint8_t* data) override;
-        RETURN_CODE transmit(size_t id, uint8_t* data, size_t size) override;
+        RETURN_CODE transmit(const size_t id, const uint8_t* data, const size_t size) override;
         
         protected:
         RETURN_CODE setup_com() override;

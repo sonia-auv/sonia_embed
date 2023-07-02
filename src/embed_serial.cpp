@@ -4,14 +4,14 @@
 namespace sonia_embed
 {
     /* #region PUBLIC */
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    EmbedSerial<MSG_SIZE, MAX_IDS>::~EmbedSerial()
+    template<size_t MAX_IDS>
+    EmbedSerial<MAX_IDS>::~EmbedSerial()
     {
         delete m_serial_handler;
     }
 
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE EmbedSerial<MSG_SIZE, MAX_IDS>::receive(uint8_t* data)
+    template<size_t MAX_IDS>
+    RETURN_CODE EmbedSerial<MAX_IDS>::receive(uint8_t* data)
     {
         if (!m_serial_handler->readable())
         {
@@ -32,8 +32,8 @@ namespace sonia_embed
         return RETURN_OK;
     }
 
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE EmbedSerial<MSG_SIZE, MAX_IDS>::transmit(uint8_t* data)
+    template<size_t MAX_IDS>
+    RETURN_CODE EmbedSerial<MAX_IDS>::transmit(uint8_t* data)
     {
         if (m_serial_handler->writable())
         {
@@ -48,8 +48,8 @@ namespace sonia_embed
 
     /* #region PROTECTED */
 
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE EmbedSerial<MSG_SIZE, MAX_IDS>::setup_com()
+    template<size_t MAX_IDS>
+    RETURN_CODE EmbedSerial<MAX_IDS>::setup_com()
     {
         m_serial_handler = new BufferedSerial(this.m_hoci, this.m_hico, this.m_baud);
         m_serial_handler->set_blocking(this.m_is_blocking);

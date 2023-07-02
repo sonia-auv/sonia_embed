@@ -3,14 +3,14 @@
 #include "rs485_toolkit.h"
 namespace sonia_embed
 {
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RS485Control<MSG_SIZE, MAX_IDS>::~RS485Control()
+    template<size_t MAX_IDS>
+    RS485Control<MAX_IDS>::~RS485Control()
     {
         delete m_serial_handler;
     }
 
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    std::pair<size_t, size_t> RS485Control<MSG_SIZE, MAX_IDS>::receive(uint8_t* data)
+    template<size_t MAX_IDS>
+    std::pair<size_t, size_t> RS485Control<MAX_IDS>::receive(uint8_t* data)
     {
         if (!m_serial_handler->readable())
         {
@@ -40,8 +40,8 @@ namespace sonia_embed
         return std::pair<size_t, size_t>(header[1], serial_size);
     }
 
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE RS485Control<MSG_SIZE, MAX_IDS>::transmit(const size_t id, uint8_t* data, const size_t size)
+    template<size_t MAX_IDS>
+    RETURN_CODE RS485Control<MAX_IDS>::transmit(const size_t id, const uint8_t* data, const size_t size)
     {   
         if (!m_serial_handler->writable())
         {
@@ -58,8 +58,8 @@ namespace sonia_embed
         return RETURN_BAD_MSG_COUNT;
     }
 
-    template<uint8_t MSG_SIZE, size_t MAX_IDS>
-    RETURN_CODE RS485Control<MSG_SIZE, MAX_IDS>::setup_com()
+    template<size_t MAX_IDS>
+    RETURN_CODE RS485Control<MAX_IDS>::setup_com()
     {
         if (this.m_is_host)
         {

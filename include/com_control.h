@@ -7,14 +7,10 @@
 
 namespace sonia_embed
 {
-    template<uint8_t const MSG_SIZE>
     class ComControl
     {
     public:
-        ComControl<MSG_SIZE>(PinName hoci, PinName hico, bool is_host = false) : m_hoci(hoci), m_hico(hico), m_is_host(is_host)
-        {
-            setup_com();
-        };
+        ComControl(PinName hoci, PinName hico, bool is_host = false) : m_hoci(hoci), m_hico(hico), m_is_host(is_host){};
 
         /**
          * @brief Read data from system.
@@ -37,13 +33,10 @@ namespace sonia_embed
         // virtual ssize_t validate(uint8_t* data, int size) = 0;
 
     protected:
-        virtual RETURN_CODE setup_com() = 0;
 
         PinName m_hoci;
         PinName m_hico;
         bool m_is_host;
-    
-    private:
 
     };
 }

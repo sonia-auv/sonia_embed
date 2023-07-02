@@ -3,14 +3,24 @@
 
 namespace sonia_embed
 {
-    template<uint8_t MSG_SIZE>
-    CanControl<MSG_SIZE>::~CanControl()
+    CanControl::CanControl(PinName hoci, PinName hico, bool is_host) : ComControl(hoci, hico, is_host)
+    {
+        if (m_is_host)
+        {
+            m_can_handler = new CAN(m_hoci, m_hico);
+        }
+        else
+        {
+            m_can_handler = new CAN(m_hico, m_hoci);
+        }
+    }
+
+    CanControl::~CanControl()
     {
         delete m_can_handler;
     }
 
-    template<uint8_t MSG_SIZE>
-    std::pair<size_t, size_t> CanControl<MSG_SIZE>::receive(uint8_t* data)
+    std::pair<size_t, size_t> CanControl::receive(uint8_t* data)
     {
         // assumtion: tram => [id, size, data]
         int msg_size = 0;
@@ -44,8 +54,7 @@ namespace sonia_embed
         return std::pair<size_t, size_t>(msg.id, serial_size);
     }
 
-    template<uint8_t MSG_SIZE>
-    RETURN_CODE CanControl<MSG_SIZE>::transmit(const size_t id, const uint8_t* data, const size_t size)
+    RETURN_CODE CanControl::transmit(const size_t id, const uint8_t* data, const size_t size)
     {
         // assumtion: tram => [id, size, data]
 
@@ -56,7 +65,7 @@ namespace sonia_embed
         {
             uint8_t tmp_data[8];
             memcpy(tmp_data, &can_msg_array[i*8], 8);
-            CANMessage msg(id, *tmp_data);
+            CANMessage msg(id, tmp_data);
             if (0 == m_can_handler->write(msg))
             {
                 return RETURN_BAD;
@@ -68,7 +77,7 @@ namespace sonia_embed
         {
             uint8_t tmp_data[8];
             memcpy(tmp_data, &can_msg_array[msg_byte_counter], can_size % 8);
-            CANMessage msg(id, *tmp_data, can_size % 8);
+            CANMessage msg(id, tmp_data, can_size % 8);
             if (0 == m_can_handler->write(msg))
             {
                 return RETURN_BAD;
@@ -84,29 +93,13 @@ namespace sonia_embed
         return RETURN_BAD_MSG_COUNT;
     }
 
-    template<uint8_t MSG_SIZE>
-    RETURN_CODE CanControl<MSG_SIZE>::set_filter(uint8_t filter_id)
+    RETURN_CODE CanControl::set_filter(uint8_t filter_id)
     {
         // TODO: Make add filter function.
         return RETURN_BAD;
     }
 
-    template<uint8_t MSG_SIZE>
-    RETURN_CODE CanControl<MSG_SIZE>::setup_com()
-    {
-        if (this.m_is_host)
-        {
-            m_can_handler = new CAN(this.m_hoci, this.m_hico);
-        }
-        else
-        {
-            m_can_handler = new CAN(this.m_hico, this.m_hoci);
-        }
-        return RETURN_OK;
-    }
-
-    template<uint8_t MSG_SIZE>
-    size_t CanControl<MSG_SIZE>::array_to_can(const uint8_t* serial, size_t size, CANMessage* can_msgs)
+    size_t CanControl::array_to_can(const uint8_t* serial, size_t size, CANMessage* can_msgs)
     {
         return size_t();
     }
