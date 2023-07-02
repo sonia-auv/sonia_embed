@@ -4,19 +4,19 @@
 namespace sonia_embed
 {
     template<size_t MAX_IDS>
-    RS485Control<MAX_IDS>::RS485Control(uint8_t handle, PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false) 
-        : SerialControl<MAX_IDS>(handle, hoci, hico, baud, is_blocking, is_host)
+    RS485Control<MAX_IDS>::RS485Control(PinName hoci, PinName hico, int baud, bool is_blocking = true, bool is_host = false) 
+        : SerialControl<MAX_IDS>(hoci, hico, baud, is_blocking, is_host)
     {
-        if (m_is_host)
+        if (is_host)
         {
-            m_serial_handler = new UnbufferedSerial(m_hoci, m_hico, m_baud);
+            m_serial_handler = new UnbufferedSerial(hoci, hico, baud);
         }
         else
         {
-            m_serial_handler = new UnbufferedSerial(m_hico, m_hoci, m_baud);
+            m_serial_handler = new UnbufferedSerial(hico, hoci, baud);
         }
 
-        m_serial_handler->set_blocking(m_is_blocking);
+        m_serial_handler->set_blocking(is_blocking);
     };
 
     template<size_t MAX_IDS>
