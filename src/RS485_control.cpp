@@ -8,14 +8,14 @@ namespace sonia_embed
     {
         if (is_host)
         {
-            m_serial_handler = new UnbufferedSerial(hoci, hico, baud);
+            m_serial_handler = new RawSerial(hoci, hico, baud);
         }
         else
         {
-            m_serial_handler = new UnbufferedSerial(hico, hoci, baud);
+            m_serial_handler = new RawSerial(hico, hoci, baud);
         }
 
-        m_serial_handler->set_blocking(is_blocking);
+        // m_serial_handler->set_blocking(is_blocking);
     };
 
     RS485Control::~RS485Control()
@@ -31,12 +31,19 @@ namespace sonia_embed
         }
 
         uint8_t header[3];
-        m_serial_handler->read(header, 3);
+        header[0] = m_serial_handler->getc();
+        header[1] = m_serial_handler->getc();
+        header[2] = m_serial_handler->getc();
 
         uint8_t serial_msg[header[2] + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
         memcpy(serial_msg, header, 3);
 
-        m_serial_handler->read(&serial_msg[3], header[2]);
+        for (size_t i = 0; i < header[2]; i++)
+        {
+            serial_msg[i+sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE] = m_serial_handler->getc();
+        }
+        
+        // m_serial_handler->read(&serial_msg[3], header[2]);
         
         if (header[0] != sonia_embed_toolkit::RS485Toolkit::START_BYTE)
         {
@@ -53,19 +60,27 @@ namespace sonia_embed
 
     RETURN_CODE RS485Control::transmit(const size_t id, const uint8_t* data, const size_t size)
     {   
-        if (!m_serial_handler->writable())
-        {
-            return RETURN_PORT_UNWRITABLE;
-        }
+        // if (!m_serial_handler->writable())
+        // {
+        //     return RETURN_PORT_UNWRITABLE;
+        // }
         //TODO Fix the dynamic sizing.
         uint8_t serial_msg[size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
         size_t serial_size = sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
 
-        if (m_serial_handler->write(serial_msg, serial_size) == serial_size)
+        for (size_t i = 0; i < size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE; i++)
         {
-            return RETURN_OK;
+            if (m_serial_handler->putc(serial_msg[i]) != serial_msg[i])
+            {
+                return RETURN_BAD;
+            }
         }
-        return RETURN_BAD_MSG_COUNT;
+        
+        // if (m_serial_handler->write(serial_msg, serial_size) == serial_size)
+        // {
+        //     return RETURN_OK;
+        // }
+        return RETURN_OK;
     }
 
 }

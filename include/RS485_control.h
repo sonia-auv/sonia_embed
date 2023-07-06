@@ -16,7 +16,7 @@ namespace sonia_embed
         RETURN_CODE transmit(const size_t id, const uint8_t* data, const size_t size) override;
 
         private:
-        UnbufferedSerial* m_serial_handler;
+        RawSerial* m_serial_handler;
 
     };
 }
