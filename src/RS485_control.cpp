@@ -32,7 +32,15 @@ namespace sonia_embed
 
         uint8_t header[3];
         header[0] = m_serial_handler->getc();
+        if (header[0] != sonia_embed_toolkit::RS485Toolkit::START_BYTE)
+        {
+            return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
+        }
         header[1] = m_serial_handler->getc();
+        if (!check_filter(header[1]))
+        {
+            return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
+        }
         header[2] = m_serial_handler->getc();
 
         uint8_t serial_msg[header[2] + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
@@ -44,18 +52,8 @@ namespace sonia_embed
         }
         
         // m_serial_handler->read(&serial_msg[3], header[2]);
-        
-        if (header[0] != sonia_embed_toolkit::RS485Toolkit::START_BYTE)
-        {
-            return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
-        }
 
-        if (!check_filter(header[1]))
-        {
-            return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
-        }
-
-        return sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(data, serial_msg);
+        return sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(serial_msg, data);
     }
 
     RETURN_CODE RS485Control::transmit(const size_t id, const uint8_t* data, const size_t size)
