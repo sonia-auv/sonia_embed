@@ -9,7 +9,7 @@ namespace sonia_embed
         RETURN_BAD,
         RETURN_BAD_MSG_COUNT,
         RETURN_MAX_IDS_REACHED,
-        RETURN_PORT_UNREADABLE,
+        RETURN_NO_MSG,
         RETURN_PORT_UNWRITABLE,
         RETURN_NOT_FOR_ME,
         RETURN_NO_START_BYTE,

@@ -1,58 +1,53 @@
-// #include "embed_serial.h"
+#include "embed_serial.h"
 
 
-// namespace sonia_embed
-// {
-//     /* #region PUBLIC */
-//     EmbedSerial::~EmbedSerial()
-//     {
-//         delete m_serial_handler;
-//     }
+namespace sonia_embed
+{
+    /* #region PUBLIC */
+    EmbedSerial::EmbedSerial(PinName hoci, PinName hico, int baud) : SerialControl(hoci, hico, baud, true)
+    {
+        m_serial_handler = new RawSerial(m_hoci, m_hico, m_baud);
+    };
 
-//     RETURN_CODE EmbedSerial::receive(uint8_t* data)
-//     {
-//         if (!m_serial_handler->readable())
-//         {
-//             return RETURN_PORT_UNREADABLE;
-//         }
+    EmbedSerial::~EmbedSerial()
+    {
+        delete m_serial_handler;
+    }
 
-//         size_t id_size[2] = {0};
+    pair<size_t, size_t> EmbedSerial::receive(uint8_t* data)
+    {
+        if (!m_serial_handler->readable())
+        {
+            return pair<size_t, size_t>(RETURN_NO_MSG, 0);
+        }
 
-//         m_serial_handler->read(id_size, 2);
+        size_t id = m_serial_handler->getc();
+        size_t size = m_serial_handler->getc();
 
-//         size_t size = id_size[1];
+        for (size_t i = 0; i < size; i++)
+        {
+            data[i] = m_serial_handler->getc();
+        }
 
-//         uint8_t tmp_data[size-2];
-//         memcpy(id_size, &data, 2);
-//         m_serial_handler->read(tmp_data, size-2);
-//         memcpy(tmp_data, &data[2], size-2);
+        return pair<size_t, size_t>(id, size);
+    }
 
-//         return RETURN_OK;
-//     }
+    RETURN_CODE EmbedSerial::transmit(const size_t id, const uint8_t *data, const size_t size)
+    {
+        if (m_serial_handler->writeable())
+        {
+            return RETURN_PORT_UNWRITABLE;
+        }
+        m_serial_handler->putc(id);
+        m_serial_handler->putc(size);
 
-//     RETURN_CODE EmbedSerial::transmit(uint8_t* data)
-//     {
-//         if (m_serial_handler->writable())
-//         {
-//             return RETURN_PORT_UNWRITABLE;
-//         }
-//         size_t size = data[1];
-//         m_serial_handler->write(data, size);
-//         return RETURN_OK;
-//     }
-
-//     /* #endregion */
-
-//     /* #region PROTECTED */
-
-//     RETURN_CODE EmbedSerial::setup_com()
-//     {
-//         m_serial_handler = new BufferedSerial(this.m_hoci, this.m_hico, this.m_baud);
-//         m_serial_handler->set_blocking(this.m_is_blocking);
+        for (size_t i = 0; i < size; i++)
+        {
+            m_serial_handler->putc(data[i]);
+        }
         
-//         return RETURN_OK;
-//     }
+        return RETURN_OK;
+    }
 
-//     /* #endregion */
-
-// }
+    /* #endregion */
+}

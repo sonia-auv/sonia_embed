@@ -28,7 +28,7 @@ namespace sonia_embed
         CANMessage msg;
         if (0 == m_can_handler->read(msg))
         {
-            return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
+            return std::pair<size_t, size_t>(RETURN_NO_MSG, 0);
         }
 
         // TODO Make constant and not magic number

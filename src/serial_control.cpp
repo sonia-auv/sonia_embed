@@ -15,6 +15,11 @@ namespace sonia_embed
 
     bool SerialControl::check_filter(size_t id)
     {
+        if (m_table_index == 0)
+        {
+            return true;
+        }
+        
         for (size_t i = 0; i < m_table_index; i++)
         {
             if (id == m_id_table[i])
