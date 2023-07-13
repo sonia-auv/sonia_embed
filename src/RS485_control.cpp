@@ -3,8 +3,8 @@
 #include "rs485_toolkit.h"
 namespace sonia_embed
 {
-    RS485Control::RS485Control(PinName hoci, PinName hico, int baud, bool is_blocking, bool is_host) 
-        : SerialControl(hoci, hico, baud, is_blocking, is_host)
+    RS485Control::RS485Control(PinName hoci, PinName hico, int baud, PinName receiver_enable, PinName transmiter_enable, PinName termination_enable, bool is_host) 
+        : SerialControl(hoci, hico, baud, false, is_host)
     {
         if (is_host)
         {
@@ -15,7 +15,10 @@ namespace sonia_embed
             m_serial_handler = new RawSerial(hico, hoci, baud);
         }
 
-        // m_serial_handler->set_blocking(is_blocking);
+        DigitalOut(receiver_enable).write(0);
+        DigitalOut(termination_enable).write(1);
+        m_transmit_enable = DigitalOut(transmiter_enable);
+        m_transmit_enable.write(0);
     };
 
     RS485Control::~RS485Control()
@@ -58,13 +61,13 @@ namespace sonia_embed
 
     RETURN_CODE RS485Control::transmit(const size_t id, const uint8_t* data, const size_t size)
     {   
-        // if (!m_serial_handler->writable())
-        // {
-        //     return RETURN_PORT_UNWRITABLE;
-        // }
+        if (!m_serial_handler->writeable())
+        {
+            return RETURN_PORT_UNWRITABLE;
+        }
         //TODO Fix the dynamic sizing.
         uint8_t serial_msg[size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
-        size_t serial_size = sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
+        sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
 
         for (size_t i = 0; i < size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE; i++)
         {
@@ -73,11 +76,7 @@ namespace sonia_embed
                 return RETURN_BAD;
             }
         }
-        
-        // if (m_serial_handler->write(serial_msg, serial_size) == serial_size)
-        // {
-        //     return RETURN_OK;
-        // }
+
         return RETURN_OK;
     }
 
