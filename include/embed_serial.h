@@ -7,6 +7,7 @@ namespace sonia_embed
     class EmbedSerial : public SerialControl
     {
     public:
+        static const uint8_t MAX_MSG_SIZE;
         EmbedSerial(PinName hoci, PinName hico, int baud);
         ~EmbedSerial();
 

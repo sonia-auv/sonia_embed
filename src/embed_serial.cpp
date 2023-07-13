@@ -4,6 +4,8 @@
 namespace sonia_embed
 {
     /* #region PUBLIC */
+    const uint8_t EmbedSerial::MAX_MSG_SIZE = 112;
+
     EmbedSerial::EmbedSerial(PinName hoci, PinName hico, int baud) : SerialControl(hoci, hico, baud, true)
     {
         m_serial_handler = new RawSerial(m_hoci, m_hico, m_baud);
@@ -23,7 +25,7 @@ namespace sonia_embed
 
         size_t id = m_serial_handler->getc();
         size_t size = m_serial_handler->getc();
-
+        size = (size > MAX_MSG_SIZE) ? MAX_MSG_SIZE : size;
         for (size_t i = 0; i < size; i++)
         {
             data[i] = m_serial_handler->getc();
