@@ -30,7 +30,10 @@ namespace sonia_embed
         {
             return std::pair<size_t, size_t>(RETURN_NO_MSG, 0);
         }
-
+        // if (msg.id != 8)
+        // {
+        //     return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
+        // }
         // TODO Make constant and not magic number
         uint8_t can_msgs[sonia_embed_toolkit::CanBusToolkit::MAX_CAN_SIZE];
 
@@ -93,9 +96,14 @@ namespace sonia_embed
         return RETURN_BAD_MSG_COUNT;
     }
 
-    RETURN_CODE CanControl::set_filter(unsigned int filter_id)
+    RETURN_CODE CanControl::set_filter(unsigned int filter_id, unsigned int mask, int handle)
     {
-        return (m_can_handler->filter(filter_id, 0xFF) != 0)? RETURN_OK : RETURN_BAD;
+        if (handle < 14 || handle > 24)
+        {
+            return RETURN_BAD;
+        }
+        m_can_handler->filter(filter_id, mask, CANStandard, handle);
+        return RETURN_OK;
     }
 
     size_t CanControl::array_to_can(const uint8_t* serial, size_t size, CANMessage* can_msgs)
