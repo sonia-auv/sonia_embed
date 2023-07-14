@@ -54,9 +54,10 @@ namespace sonia_embed
         while (!m_cb.pop(header[2]));
         header[2] = (header[2] > sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE) ? sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE : header[2]; 
 
-        uint8_t serial_msg[header[2] + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
+        uint8_t serial_msg[8 + 3];
         memcpy(serial_msg, header, 3);
-        for (size_t i = 0; i < header[2]; i++)
+        
+        for (size_t i = 0; i < 8; i++)
         {
             while (!m_cb.pop(serial_msg[i + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE]));
         }

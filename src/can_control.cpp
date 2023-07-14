@@ -93,10 +93,9 @@ namespace sonia_embed
         return RETURN_BAD_MSG_COUNT;
     }
 
-    RETURN_CODE CanControl::set_filter(uint8_t filter_id)
+    RETURN_CODE CanControl::set_filter(unsigned int filter_id)
     {
-        // TODO: Make add filter function.
-        return RETURN_BAD;
+        return (m_can_handler->filter(filter_id, 0xFF) != 0)? RETURN_OK : RETURN_BAD;
     }
 
     size_t CanControl::array_to_can(const uint8_t* serial, size_t size, CANMessage* can_msgs)
