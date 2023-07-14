@@ -9,6 +9,7 @@ namespace sonia_embed
     EmbedSerial::EmbedSerial(PinName hoci, PinName hico, int baud) : SerialControl(hoci, hico, baud, true)
     {
         m_serial_handler = new RawSerial(m_hoci, m_hico, m_baud);
+        m_serial_handler->attach(callback(this, &EmbedSerial::consume_data), Serial::RxIrq);
     };
 
     EmbedSerial::~EmbedSerial()
@@ -18,17 +19,20 @@ namespace sonia_embed
 
     pair<size_t, size_t> EmbedSerial::receive(uint8_t* data)
     {
-        if (!m_serial_handler->readable())
+        if (m_cb.empty())
         {
             return pair<size_t, size_t>(RETURN_NO_MSG, 0);
         }
+        uint8_t header[2];
+        m_cb.pop(header[0]);
+        while(!m_cb.pop(header[1]));
+        size_t id = header[0];
+        size_t size = header[1];
 
-        size_t id = m_serial_handler->getc();
-        size_t size = m_serial_handler->getc();
         size = (size > MAX_MSG_SIZE) ? MAX_MSG_SIZE : size;
         for (size_t i = 0; i < size; i++)
         {
-            data[i] = m_serial_handler->getc();
+            while(!m_cb.pop(data[i]));
         }
 
         return pair<size_t, size_t>(id, size);
@@ -36,7 +40,7 @@ namespace sonia_embed
 
     RETURN_CODE EmbedSerial::transmit(const size_t id, const uint8_t *data, const size_t size)
     {
-        if (m_serial_handler->writeable())
+        if (!m_serial_handler->writeable())
         {
             return RETURN_PORT_UNWRITABLE;
         }
@@ -51,5 +55,9 @@ namespace sonia_embed
         return RETURN_OK;
     }
 
+    void EmbedSerial::consume_data()
+    {
+        m_cb.push(m_serial_handler->getc());
+    }
     /* #endregion */
 }
