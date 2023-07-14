@@ -20,6 +20,8 @@ namespace sonia_embed
             m_serial_handler = new RawSerial(m_hico, m_hoci, m_baud);
         }
 
+        m_serial_handler->attach(callback(this, &RS485Control::consume_data), RawSerial::RxIrq);
+
         m_receiver_enable.write(0);
         m_termination_enable.write(0);
         m_transmiter_enable.write(0);
@@ -32,23 +34,24 @@ namespace sonia_embed
 
     std::pair<size_t, size_t> RS485Control::receive(uint8_t *data)
     {
-        if (!m_serial_handler->readable())
+        if (m_cb.empty())
         {
             return std::pair<size_t, size_t>(RETURN_NO_MSG, 0);
         }
 
         uint8_t header[3];
-        header[0] = m_serial_handler->getc();
+        m_cb.pop(header[0]);
         if (header[0] != sonia_embed_toolkit::RS485Toolkit::START_BYTE)
         {
             return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
         }
-        header[1] = m_serial_handler->getc();
+
+        while (!m_cb.pop(header[1]));
         if (!check_filter(header[1]))
         {
             return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
         }
-        header[2] = m_serial_handler->getc();
+        while (!m_cb.pop(header[2]));
         header[2] = (header[2] > sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE) ? sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE : header[2]; 
 
         uint8_t serial_msg[header[2]+ sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
@@ -56,7 +59,7 @@ namespace sonia_embed
         
         for (size_t i = 0; i < header[2]; i++)
         {
-            serial_msg[i + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE] = m_serial_handler->getc();
+            while (!m_cb.pop(serial_msg[i + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE]));
         }
 
         return sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(serial_msg, data);
@@ -69,7 +72,8 @@ namespace sonia_embed
             return RETURN_PORT_UNWRITABLE;
         }
         m_transmiter_enable.write(1);
-
+        ThisThread::sleep_for(1);
+        
         // TODO Fix the dynamic sizing.
         uint8_t serial_msg[size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
         sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
@@ -81,5 +85,10 @@ namespace sonia_embed
         ThisThread::sleep_for(1);
         m_transmiter_enable.write(0);
         return RETURN_OK;
+    }
+
+    void RS485Control::consume_data()
+    {
+        m_cb.push(m_serial_handler->getc());
     }
 }
