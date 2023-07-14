@@ -49,11 +49,12 @@ namespace sonia_embed
             return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
         }
         header[2] = m_serial_handler->getc();
-        header[2] = (header[2] > RS485Toolkit::MAX_MSG_SIZE) ? RS485Toolkit::MAX_MSG_SIZE : header[2]; 
+        header[2] = (header[2] > sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE) ? sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE : header[2]; 
 
-        uint8_t serial_msg[header[2] + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
+        uint8_t serial_msg[8 + 3];
         memcpy(serial_msg, header, 3);
-        for (size_t i = 0; i < header[2]; i++)
+        
+        for (size_t i = 0; i < 8; i++)
         {
             serial_msg[i + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE] = m_serial_handler->getc();
         }
@@ -77,6 +78,7 @@ namespace sonia_embed
         {
             m_serial_handler->putc(serial_msg[i]);
         }
+        ThisThread::sleep_for(1);
         m_transmiter_enable.write(0);
         return RETURN_OK;
     }
