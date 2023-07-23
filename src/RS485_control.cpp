@@ -39,30 +39,37 @@ namespace sonia_embed
             return std::pair<size_t, size_t>(RETURN_NO_MSG, 0);
         }
 
-        uint8_t header[3];
-        m_cb.pop(header[0]);
+        uint8_t enc_header[sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE];
+        for (size_t i = 0; i < sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE; i++)
+        {
+            while (!m_cb.pop(enc_header[i]));
+        }
+
+        uint8_t header[sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
+        sonia_embed_toolkit::RS485Toolkit::convert_serial_to_header(enc_header, header);
+
         if (header[0] != sonia_embed_toolkit::RS485Toolkit::START_BYTE)
         {
             return std::pair<size_t, size_t>(RETURN_NO_START_BYTE, 0);
         }
 
-        while (!m_cb.pop(header[1]));
         if (!check_filter(header[1]))
         {
             return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
         }
-        while (!m_cb.pop(header[2]));
-        header[2] = (header[2] > sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE) ? sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE : header[2]; 
 
-        uint8_t serial_msg[header[2]+ sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
-        memcpy(serial_msg, header, 3);
+        header[2] = (header[2] > sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE) ? sonia_embed_toolkit::RS485Toolkit::MAX_MSG_SIZE : header[2];
+        size_t pack_msg_size = (size_t)ceil((double)(header[2]*2*7)/8);
+
+        uint8_t enc_serial_msg[pack_msg_size + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE];
+        memcpy(enc_serial_msg, enc_header, sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE);
         
-        for (size_t i = 0; i < header[2]; i++)
+        for (size_t i = 0; i < pack_msg_size; i++)
         {
-            while (!m_cb.pop(serial_msg[i + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE]));
+            while (!m_cb.pop(enc_serial_msg[i + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE]));
         }
 
-        return sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(serial_msg, data);
+        return sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(enc_serial_msg, data);
     }
 
     RETURN_CODE RS485Control::transmit(const size_t id, const uint8_t *data, const size_t size)
@@ -75,10 +82,11 @@ namespace sonia_embed
         ThisThread::sleep_for(1);
         
         // TODO Fix the dynamic sizing.
-        uint8_t serial_msg[size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE];
-        sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
+        size_t pack_msg_size = (size_t)ceil((double)(size*2*7)/8);
+        uint8_t serial_msg[pack_msg_size + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE];
+        size_t pack_size = sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
 
-        for (size_t i = 0; i < size + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE; i++)
+        for (size_t i = 0; i < pack_size + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE; i++)
         {
             m_serial_handler->putc(serial_msg[i]);
         }
