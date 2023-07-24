@@ -82,8 +82,7 @@ namespace sonia_embed
         ThisThread::sleep_for(1);
         
         // TODO Fix the dynamic sizing.
-        size_t pack_msg_size = (size_t)ceil((double)(size*2*7)/8);
-        uint8_t serial_msg[pack_msg_size + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE];
+        uint8_t serial_msg[sonia_embed_toolkit::RS485Toolkit::PACK_MSG_SIZE + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE];
         size_t pack_size = sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
 
         for (size_t i = 0; i < pack_size + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE; i++)
