@@ -85,7 +85,7 @@ namespace sonia_embed
         uint8_t serial_msg[sonia_embed_toolkit::RS485Toolkit::PACK_MSG_SIZE + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE];
         size_t pack_size = sonia_embed_toolkit::RS485Toolkit::convert_message_to_serial(id, size, data, serial_msg);
 
-        for (size_t i = 0; i < pack_size + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE; i++)
+        for (size_t i = 0; i < pack_size; i++)
         {
             m_serial_handler->putc(serial_msg[i]);
         }
