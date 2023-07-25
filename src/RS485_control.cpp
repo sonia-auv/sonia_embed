@@ -66,7 +66,7 @@ namespace sonia_embed
         
         for (size_t i = 0; i < pack_msg_size; i++)
         {
-            while (!m_cb.pop(enc_serial_msg[i + sonia_embed_toolkit::RS485Toolkit::HEADER_SIZE]));
+            while (!m_cb.pop(enc_serial_msg[i + sonia_embed_toolkit::RS485Toolkit::PACK_HEADER_SIZE]));
         }
 
         return sonia_embed_toolkit::RS485Toolkit::convert_serial_to_message(enc_serial_msg, data);
