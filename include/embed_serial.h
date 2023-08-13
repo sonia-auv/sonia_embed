@@ -4,10 +4,22 @@
 
 namespace sonia_embed
 {
+    /**
+     * @brief Max message size.
+     */
+    const uint8_t MAX_MSG_SIZE = 112;
     class EmbedSerial : public SerialControl
     {
     public:
-        static const uint8_t MAX_MSG_SIZE;
+
+
+        /**
+         * @brief Construct a new Embed Serial object.
+         * 
+         * @param hoci Host Out Client In Pin.
+         * @param hico Host In Client Out Pin.
+         * @param baud Baudrate.
+         */
         EmbedSerial(PinName hoci, PinName hico, int baud);
         ~EmbedSerial();
 

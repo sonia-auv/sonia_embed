@@ -4,7 +4,6 @@
 namespace sonia_embed
 {
     /* #region PUBLIC */
-    const uint8_t EmbedSerial::MAX_MSG_SIZE = 112;
 
     EmbedSerial::EmbedSerial(PinName hoci, PinName hico, int baud) : SerialControl(hoci, hico, baud, true)
     {

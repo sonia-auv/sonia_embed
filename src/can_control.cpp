@@ -22,7 +22,6 @@ namespace sonia_embed
 
     std::pair<size_t, size_t> CanControl::receive(uint8_t* data)
     {
-        // assumtion: tram => [id, size, data]
         int msg_size = 0;
         
         CANMessage msg;
@@ -30,11 +29,7 @@ namespace sonia_embed
         {
             return std::pair<size_t, size_t>(RETURN_NO_MSG, 0);
         }
-        // if (msg.id != 8)
-        // {
-        //     return std::pair<size_t, size_t>(RETURN_NOT_FOR_ME, 0);
-        // }
-        // TODO Make constant and not magic number
+
         uint8_t can_msgs[sonia_embed_toolkit::CanBusToolkit::MAX_CAN_SIZE];
 
         uint8_t total = msg.data[0] & 0b1111;
@@ -59,7 +54,6 @@ namespace sonia_embed
 
     RETURN_CODE CanControl::transmit(const size_t id, const uint8_t* data, const size_t size)
     {
-        // assumtion: tram => [id, size, data]
 
         uint8_t can_msg_array[sonia_embed_toolkit::CanBusToolkit::MAX_CAN_SIZE];
         size_t can_size = sonia_embed_toolkit::CanBusToolkit::convert_to_can(size, data, can_msg_array);

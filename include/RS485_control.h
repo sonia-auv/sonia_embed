@@ -3,19 +3,25 @@
 #include "mbed.h"
 #include "serial_control.h"
 #include "return_codes.h"
+#include "rs485_toolkit.h"
 
 namespace sonia_embed
-{
-    struct RS485_data
-    {
-        size_t id;
-        size_t size;
-        uint8_t msg[112];
-    };
-    
+{    
     class RS485Control : public SerialControl
     {
     public:
+
+        /**
+         * @brief Construct a new RS485Control object.
+         * 
+         * @param hoci                  Host Out Client In Pin / Port.
+         * @param hico                  Host In Client Out Pin / Port.
+         * @param baud                  Baud Rate.
+         * @param receiver_enable       Pin that controls the receiver.
+         * @param transmiter_enable     Pin that controls the transmitter.
+         * @param termination_enable    Pin that controls the termination
+         * @param is_host               Is this interface the host.
+         */
         RS485Control(PinName hoci, PinName hico, int baud,
                      PinName receiver_enable, PinName transmiter_enable,
                      PinName termination_enable, bool is_host = false);
